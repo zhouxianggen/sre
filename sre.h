@@ -1,92 +1,92 @@
 /*
  * sre: simple regular engine
- * Copyright (C) 2012 UC
+ * Copyright (C) 2014 UC
  * Author: zhouxg@ucweb.com
  *
  */
-#ifndef SRE_H
-#define SRE_H
-#include <string>
+#ifndef UCLTP_SRE_H
+#define UCLTP_SRE_H
+
+#include <stdio.h>
 #include <vector>
-using namespace std;
-namespace UCLTP {
+using std::vector;
+#include "common.h"
 
-#define MAX_U8C_LENGTH 7
-#define MAX_PARENTHESE_CNT 32
+namespace ucltp {
 
-enum Token {
-	/* supported wildcards */
-	NUMBER, // \d	
-	SPACE, // \s
-	ALPHABET, // \a
-	CHINESE, // \c
-	NOT_NUMBER,	// \D
-	NOT_SPACE, // \S
-	NOT_ALPHABET,	// \A
-	NOT_CHINESE, // \C
-	POSI_BEGIN, // ^
-	POSI_END, // $
-	LEFT_PARENTHESE, // (
-	RIGHT_PARENTHESE, // )
-	BACKTRACE, // |
-	DOT, // .
-	REPEAT_ONCE_ZERO, // ?
-	REPEAT_MORE_ZERO, // *
-	REPEAT_MORE_ONCE,	// +
-	REPEAT_ZERO_ONCE, // ??
-	REPEAT_ZERO_MORE, // *?	
-	REPEAT_ONCE_MORE, // +?
-	COMMON, // common
-	END_REGEXP, // 0
-	EMPTY // null
+// supported wildcards
+enum token_t {
+	NUMBER, // \d 0	
+	SPACE, // \s 1
+	ALPHABET, // \a 2
+	CHINESE, // \c 3
+	NOT_NUMBER,	// \D 4
+	NOT_SPACE, // \S 5
+	NOT_ALPHABET,	// \A 6
+	NOT_CHINESE, // \C 7
+	POSI_BEGIN, // ^ 8
+	POSI_END, // $ 9
+	LEFT_PARENTHESE, // ( 10
+	RIGHT_PARENTHESE, // ) 11
+	BACKTRACE, // | 12
+	DOT, // . 13
+	REPEAT_ONCE_ZERO, // ? 14
+	REPEAT_MORE_ZERO, // * 15
+	REPEAT_MORE_ONCE,	// + 16
+	REPEAT_ZERO_ONCE, // ?? 17
+	REPEAT_ZERO_MORE, // *?	18
+	REPEAT_ONCE_MORE, // +? 19
+	COMMON, // common 20
+	END_REGEXP, // 0 21
+	EMPTY // null 22
 };
 
 /* graph node */
-struct Node {
-	int token;
-	char u8c[MAX_U8C_LENGTH];
-	int	ord;
-	int	nnexts;
-	Node **pnexts;
-	Node (int t, char *u=NULL, int r=0);
+struct node_t {
+	int _token;
+  uint32 _code;
+  vector<node_t*> _nexts;
+  bool _show;
 	
-	bool add_next (Node* p);
-	void release ();
+  node_t(int tok, uint32 code=0) : _token(tok), _code(code), _show(false) {}
+	void add_next(node_t* p) { _nexts.push_back(p); }
+  
+  void show(int lev=0) {
+    for (int i=0; i<lev; i+=1) printf("--");
+    printf("%x(%2d,%4x)\n", (uint64)this, _token, _code);
+    if (_show == false) {
+      _show = true;
+      for (int i=0; i<_nexts.size(); i+=1)
+        _nexts[i]->show(lev+1);
+    }
+  }
 };
 
-struct	Graph {
-	Graph (Node *pf=0, Node *pl=0): pfirst(pf), plast(pl) {}
-	bool empty () { return pfirst == NULL; }
-	bool single () { return pfirst == plast; }
-	Node *pfirst;
-	Node *plast;
+struct graph_t {
+	node_t *_first;
+	node_t *_last;
+	
+  graph_t(node_t *pf=0, node_t *pl=0): _first(pf), _last(pl) {}
+	bool empty() { return _first == NULL; }
+	bool single() { return _first == _last; }
 };
 
 class	Sre {
 public:
-	Sre ();
-	enum Flags { IGNORECASE=0x1, DOTALL=0x02, NONE=0 };
-	bool compile (const char *st, int flag=NONE);
-	int match (const char *st);
-	const char* search (const char *st);
-	string group (const char *st, int ord);
-	~Sre ();
+	Sre () {}
+	bool compile(const char *st);
+	int match(const vector<char_t>& chars, int start);
+	~Sre () { release(); }
 private:
-	int get_u8char (const char *st, char *u8c);
-	Token get_token (const char *st, int &pos, char *u8c);
-	Graph make_graph (const char *st, int s, int e, Graph prev);
-	int	match_graph (const char *st, int posi, Node* pnode);
-	Node* alloc_node (int token, char *u8c=NULL, int ord=0);
-	Node* alloc_node (const Node &n);
-	void release ();
-private:
-	int flags;
-	int parenthese_cnt;
-	int	parenthese_ord;
-	int begins[MAX_PARENTHESE_CNT];
-	int ends[MAX_PARENTHESE_CNT];
-	Graph graph;
-	vector<Node*> collector;
+	graph_t _graph;
+	vector<node_t*> _collector;
+	
+  void release();
+  token_t get_token(const char *str, int &pos, uint32& code);
+	graph_t make_graph(const char *str, int start, int end, graph_t prev);
+	int	match_graph (const vector<char_t>& chars, int posi, node_t* pnode);
+	node_t* alloc_node (int token, uint32 code=0);
+	node_t* alloc_node (const node_t &n);
 };
 
 }
