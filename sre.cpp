@@ -4,32 +4,32 @@
 
 namespace ucltp {
 
-void Sre::release()
+void SreImpl::release()
 {
   for (int i=0; i<_collector.size(); i+=1)
     delete _collector[i];
   _collector.clear();
 }
 
-bool Sre::compile(const char* exp)
+bool SreImpl::compile(const char* exp)
 {
   release();
   if (!exp)
     return false;
   _graph = make_graph(exp, 0, strlen(exp), graph_t());
-  //_graph._first->show();
+  _graph._first->show();
   return !_graph.empty();
 }
 
-int  Sre::match(const vector<char_t>& chars, int start)
+int SreImpl::match(const vector<char_t>& chars, int start)
 {
   int end = match_graph(chars, start, _graph._first);
   return end - start;
 }
 
-int Sre::match_graph(const vector<char_t>& chars, int posi, node_t* pnode)
+int SreImpl::match_graph(const vector<char_t>& chars, int posi, node_t* pnode)
 {
-  //printf("match, char=%4x, %x, (%2d, %4x)\n", chars[posi]._code, (uint64)pnode, pnode->_token, pnode->_code);
+  printf("match, char=%4x, %x, (%2d, %4x)\n", chars[posi]._code, (uint64)pnode, pnode->_token, pnode->_code);
   switch (pnode->_token) 
   {
   case COMMON:
@@ -101,14 +101,14 @@ int Sre::match_graph(const vector<char_t>& chars, int posi, node_t* pnode)
     return posi;
   for (int i=0; i<pnode->_nexts.size(); i+=1) {
     int end = match_graph(chars, posi, pnode->_nexts[i]);
-    if (end >= posi)
+    if (end > 0)
       return end;
   }
 match_failed:
   return 0;
 }
 
-token_t Sre::get_token(const char *exp, int &pos, uint32 &code) 
+token_t SreImpl::get_token(const char *exp, int &pos, uint32 &code) 
 {
   uint32 clen;
 
@@ -155,21 +155,21 @@ token_t Sre::get_token(const char *exp, int &pos, uint32 &code)
   return COMMON;
 }
 
-node_t* Sre::alloc_node(int token, uint32 code)
+node_t* SreImpl::alloc_node(int token, uint32 code)
 {
   node_t *p = new node_t(token, code);
   if (p) _collector.push_back(p);
   return p;
 }
 
-node_t* Sre::alloc_node(const node_t &n)
+node_t* SreImpl::alloc_node(const node_t &n)
 {
   node_t *p = new node_t(n);
   if (p) _collector.push_back(p);
   return p;
 }
 
-graph_t Sre::make_graph(const char *exp, int s, int e, graph_t prev)
+graph_t SreImpl::make_graph(const char *exp, int s, int e, graph_t prev)
 {
   graph_t grh;
   node_t *pn=NULL, *pn2=NULL;
@@ -311,6 +311,38 @@ graph_t Sre::make_graph(const char *exp, int s, int e, graph_t prev)
     break;
   }
   return graph_t();
+}
+
+int Sre::build(const char* fre)
+{
+  vector<string> lines;
+  vector<string> parts;
+
+  _objects.clear();
+
+  read_lines(fre, lines);
+  for (int i=0; i<lines.size(); i+=1) {
+    split(lines[i], parts);
+    if (parts.size() == 2) {
+      int type = atoi(parts[1].c_str());
+      SreImpl* obj = new SreImpl;
+      _objects.push_back(std::make_pair(obj, type));
+      _objects.back().first->compile(parts[0].c_str());
+    }
+  }
+}
+
+match_result_t Sre::match(const vector<char_t>& chars, int start)
+{
+  match_result_t r;
+  for (int i=0; i<_objects.size(); i+=1) {
+    int len = _objects[i].first->match(chars, start);
+    if (len > r._len) {
+      r._len = len;
+      r._type = _objects[i].second;
+    }
+  }
+  return r;
 }
 
 } // namespace

@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <vector>
 using std::vector;
+using std::pair;
 #include "common.h"
 
 namespace ucltp {
@@ -72,12 +73,12 @@ struct graph_t {
   bool single() { return _first == _last; }
 };
 
-class Sre {
+class SreImpl {
 public:
-  Sre() {}
+  SreImpl() {}
   bool compile(const char *st);
   int match(const vector<char_t>& chars, int start);
-  ~Sre() { release(); }
+  ~SreImpl() { release(); }
 private:
   graph_t _graph;
   vector<node_t*> _collector;
@@ -88,6 +89,19 @@ private:
   int  match_graph (const vector<char_t>& chars, int posi, node_t* pnode);
   node_t* alloc_node(int token, uint32 code=0);
   node_t* alloc_node(const node_t &n);
+};
+
+// wrapper
+class Sre {
+public:
+  int build(const char* fre);
+  match_result_t match(const vector<char_t>& chars, int start);
+  ~Sre () {
+    for (int i=0; i<_objects.size(); i+=1)
+      delete _objects[i].first;
+  }
+private:
+  vector<pair<SreImpl*, int> > _objects;
 };
 
 }
