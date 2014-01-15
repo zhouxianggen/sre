@@ -17,7 +17,7 @@ bool SreImpl::compile(const char* exp)
   if (!exp)
     return false;
   _graph = make_graph(exp, 0, strlen(exp), graph_t());
-  _graph._first->show();
+  //_graph._first->show();
   return !_graph.empty();
 }
 
@@ -29,7 +29,7 @@ int SreImpl::match(const vector<char_t>& chars, int start)
 
 int SreImpl::match_graph(const vector<char_t>& chars, int posi, node_t* pnode)
 {
-  printf("match, char=%4x, %x, (%2d, %4x)\n", chars[posi]._code, (uint64)pnode, pnode->_token, pnode->_code);
+  //printf("match, char[%d]=%4x, %x, (%2d, %4x)\n", posi, chars[posi]._code, (uint64)pnode, pnode->_token, pnode->_code);
   switch (pnode->_token) 
   {
   case COMMON:
@@ -74,13 +74,23 @@ int SreImpl::match_graph(const vector<char_t>& chars, int posi, node_t* pnode)
       goto match_failed;
     posi += 1;
     break;
-  case NUMBER:
+  case DIGIT:
     if (posi >= chars.size() || !isdigit(chars[posi]._code))
       goto match_failed;
     posi += 1;
     break;
-  case NOT_NUMBER:
+  case NOT_DIGIT:
     if (posi >= chars.size() || isdigit(chars[posi]._code))
+      goto match_failed;
+    posi += 1;
+    break;
+  case NUMBER:
+    if (posi >= chars.size() || !isnumber(chars[posi]._code))
+      goto match_failed;
+    posi += 1;
+    break;
+  case NOT_NUMBER:
+    if (posi >= chars.size() || isnumber(chars[posi]._code))
       goto match_failed;
     posi += 1;
     break;
@@ -120,11 +130,13 @@ token_t SreImpl::get_token(const char *exp, int &pos, uint32 &code)
     pos += clen;
     if (clen==1 && char(code)=='a') return ALPHABET;
     if (clen==1 && char(code)=='c') return CHINESE;
-    if (clen==1 && char(code)=='d') return NUMBER;
+    if (clen==1 && char(code)=='d') return DIGIT;
+    if (clen==1 && char(code)=='n') return NUMBER;
     if (clen==1 && char(code)=='s') return SPACE;
     if (clen==1 && char(code)=='A') return NOT_ALPHABET;
     if (clen==1 && char(code)=='C') return NOT_CHINESE;
-    if (clen==1 && char(code)=='D') return NOT_NUMBER;
+    if (clen==1 && char(code)=='D') return NOT_DIGIT;
+    if (clen==1 && char(code)=='N') return NOT_NUMBER;
     if (clen==1 && char(code)=='S') return NOT_SPACE;
     if (clen==1 && char(code)=='f') {code = uint32('\f'); return COMMON;}
     if (clen==1 && char(code)=='n') {code = uint32('\n'); return COMMON;}
@@ -187,10 +199,12 @@ graph_t SreImpl::make_graph(const char *exp, int s, int e, graph_t prev)
   case DOT:
   case ALPHABET:
   case CHINESE:
+  case DIGIT:
   case NUMBER:
   case SPACE:
   case NOT_ALPHABET:
   case NOT_CHINESE:
+  case NOT_DIGIT:
   case NOT_NUMBER:
   case NOT_SPACE:
     pn = alloc_node(tok, code);

@@ -17,29 +17,31 @@ namespace ucltp {
 
 // supported wildcards
 enum token_t {
-  NUMBER, // \d 0  
-  SPACE, // \s 1
-  ALPHABET, // \a 2
-  CHINESE, // \c 3
-  NOT_NUMBER,  // \D 4
-  NOT_SPACE, // \S 5
-  NOT_ALPHABET,  // \A 6
-  NOT_CHINESE, // \C 7
-  POSI_BEGIN, // ^ 8
-  POSI_END, // $ 9
-  LEFT_PARENTHESE, // ( 10
-  RIGHT_PARENTHESE, // ) 11
-  BACKTRACE, // | 12
-  DOT, // . 13
-  REPEAT_ONCE_ZERO, // ? 14
-  REPEAT_MORE_ZERO, // * 15
-  REPEAT_MORE_ONCE,  // + 16
-  REPEAT_ZERO_ONCE, // ?? 17
-  REPEAT_ZERO_MORE, // *?  18
-  REPEAT_ONCE_MORE, // +? 19
-  COMMON, // common 20
-  END_REGEXP, // 0 21
-  EMPTY // null 22
+  DIGIT, // \d 0
+  NUMBER, // \n 1
+  SPACE, // \s 2
+  ALPHABET, // \a 3
+  CHINESE, // \c 4
+  NOT_DIGIT,  // \D 5
+  NOT_NUMBER, // \N 6
+  NOT_SPACE, // \S 7
+  NOT_ALPHABET,  // \A 8
+  NOT_CHINESE, // \C 9
+  POSI_BEGIN, // ^ 10
+  POSI_END, // $ 11
+  LEFT_PARENTHESE, // ( 12
+  RIGHT_PARENTHESE, // ) 13
+  BACKTRACE, // | 14
+  DOT, // . 15
+  REPEAT_ONCE_ZERO, // ? 16
+  REPEAT_MORE_ZERO, // * 17
+  REPEAT_MORE_ONCE,  // + 18
+  REPEAT_ZERO_ONCE, // ?? 19
+  REPEAT_ZERO_MORE, // *?  20
+  REPEAT_ONCE_MORE, // +? 21
+  COMMON, // common 22
+  END_REGEXP, // 0 23
+  EMPTY // null 24
 };
 
 // graph node

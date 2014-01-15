@@ -17,6 +17,9 @@ typedef  unsigned long long  uint64;
 
 #define  u2l(u)  (((u)>=0x41 && (u)<=0x5A)? ((u)+0x20) : (u))
 #define  ischn(u)  ((u)>=0x4E00 && (u)<=0x9FA5)
+#define  isnumber(u)  ((u)==0x4E00 || (u)==0x4E8C || (u)==0x4E09 || \
+                       (u)==0x56DB || (u)==0x4E94 || (u)==0x516D || \
+                       (u)==0x4E03 || (u)==0x516B || (u)==0x4E5D) 
 #define  max2(x, y)  ((x)>(y)? (x) : (y))
 #define  min2(x, y)  ((x)<(y)? (x) : (y))
 
@@ -91,6 +94,8 @@ inline void make_words(const vector<char_t>& chars, vector<word_t>& words)
 struct match_result_t {
   int _len;
   int _type;
+
+  match_result_t() : _len(0), _type(0) {}
 };
 
 }

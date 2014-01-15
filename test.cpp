@@ -14,6 +14,7 @@ int main(int argc, char** argv)
   
   Sre re;
   re.build(argv[1]);
+  gettimeofday(&sTime, NULL);
   match_result_t r = re.match(chars, 0);
   printf("match result is, len=%d, type=%d\n", r._len, r._type);
 
