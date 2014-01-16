@@ -11,7 +11,7 @@
 #include <vector>
 using std::vector;
 using std::pair;
-#include "common.h"
+#include "def.h"
 
 namespace ucltp {
 

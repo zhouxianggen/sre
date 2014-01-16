@@ -338,9 +338,9 @@ int Sre::build(const char* fre)
   for (int i=0; i<lines.size(); i+=1) {
     split(lines[i], parts);
     if (parts.size() == 2) {
-      int type = atoi(parts[1].c_str());
+      int value = atoi(parts[1].c_str());
       SreImpl* obj = new SreImpl;
-      _objects.push_back(std::make_pair(obj, type));
+      _objects.push_back(std::make_pair(obj, value));
       _objects.back().first->compile(parts[0].c_str());
     }
   }
@@ -351,9 +351,9 @@ match_result_t Sre::match(const vector<char_t>& chars, int start)
   match_result_t r;
   for (int i=0; i<_objects.size(); i+=1) {
     int len = _objects[i].first->match(chars, start);
-    if (len > r._len) {
-      r._len = len;
-      r._type = _objects[i].second;
+    if (len > r.len) {
+      r.len = len;
+      r.value = _objects[i].second;
     }
   }
   return r;
